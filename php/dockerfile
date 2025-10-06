@@ -1,0 +1,18 @@
+FROM php:8.1-fpm
+
+RUN apt-get update && apt-get install -y \
+    libpng-dev \
+    libjpeg62-turbo-dev \
+    libfreetype6-dev \
+    zlib1g-dev \
+    libmariadb-dev \
+    libicu-dev \
+    libxml2-dev \
+    git \
+    unzip \
+    && docker-php-ext-install pdo pdo_mysql mysqli opcache \
+    && docker-php-ext-enable opcache
+
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+
+WORKDIR /var/www/test_project
