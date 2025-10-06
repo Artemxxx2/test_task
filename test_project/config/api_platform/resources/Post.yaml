@@ -1,0 +1,7 @@
+App\Entity\Post:
+    operations:
+        ApiPlatform\Metadata\GetCollection:
+            method: 'GET'
+            path: '/posts'
+            filters:
+                - post.filter_tag
