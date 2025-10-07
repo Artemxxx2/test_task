@@ -14,14 +14,17 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Entity(repositoryClass: PostRepository::class)]
 class Post
 {
+    public const GROUP_READ = 'post:read';
+    public const GROUP_WRITE = 'post:write';
+    
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['post:read','post:write'])]
+    #[Groups([self::GROUP_READ,self::GROUP_WRITE])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['post:read','post:write'])]
+    #[Groups([self::GROUP_READ,self::GROUP_WRITE])]
     #[Assert\Length(
         min: 3,
         minMessage: 'Min title length is {{ limit }}',
@@ -29,15 +32,15 @@ class Post
     private ?string $title = null;
 
     #[ORM\Column]
-    #[Groups(['post:read'])]
+    #[Groups([self::GROUP_READ])]
     private ?\DateTimeImmutable $created_at = null;
 
     #[ORM\Column]
-    #[Groups(['post:read'])]
+    #[Groups([self::GROUP_READ])]
     private ?\DateTimeImmutable $updated_at = null;
 
     #[ORM\Column(type: Types::TEXT)]
-    #[Groups(['post:read','post:write'])]
+    #[Groups([self::GROUP_READ,self::GROUP_WRITE])]
     #[Assert\Length(
         min: 20,
         minMessage: 'Min title length is {{ limit }}',
@@ -48,7 +51,7 @@ class Post
      * @var Collection<int, Tag>
      */
     #[ORM\ManyToMany(targetEntity: Tag::class, mappedBy: 'posts')]
-    #[Groups(['post:read','post:write'])]
+    #[Groups([self::GROUP_READ,self::GROUP_WRITE])]
     #[Assert\Count(
         min: 1,
         minMessage: 'Post should have at least 1 tag'

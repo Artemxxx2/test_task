@@ -18,14 +18,17 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 #[ORM\Entity(repositoryClass: TagRepository::class)]
 class Tag
 {
+    public const GROUP_READ = 'tag:read';
+    public const GROUP_WRITE = 'post:write';
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['tag:read'])]
+    #[Groups([self::GROUP_READ])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['tag:read','tag:write'])]
+    #[Groups([self::GROUP_READ,self::GROUP_WRITE])]
     #[Assert\Length(
         min: 3,
         minMessage: 'Min title length is {{ limit }}',
