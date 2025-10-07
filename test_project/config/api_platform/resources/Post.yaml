@@ -5,3 +5,13 @@ App\Entity\Post:
             path: '/posts'
             filters:
                 - post.filter_tag
+            normalizationContext:
+                groups: ['post:read']
+        ApiPlatform\Metadata\POST:
+            method: 'POST'
+            denormalizationContext:
+                groups: ['post:write']
+            path: '/posts'
+            filters:
+                - post.filter_tag
+        ApiPlatform\Metadata\Delete: ~                           

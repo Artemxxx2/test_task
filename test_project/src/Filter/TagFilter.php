@@ -13,7 +13,7 @@ final class TagFilter implements FilterInterface
 {
     public function apply(QueryBuilder $queryBuilder, QueryNameGeneratorInterface $queryNameGenerator, string $resourceClass, ?Operation $operation = null, array $context = []): void
     {
-        dd('test');
+
     }
 
     public function getDescription(string $resourceClass): array
