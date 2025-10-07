@@ -127,6 +127,7 @@
                 <div class="form-group">
                     <label for="title">Name *</label>
                     <input type="text" id="title" name="title" required placeholder="Enter tag name">
+                    <div class="error-content" id="error-tags"></div>                    
                 </div>
                 <div class="form-actions">
                     <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
@@ -208,11 +209,20 @@
                 if (response.ok) {
                     closeModal();
                     showSuccessModal()
-                } else {
-                    alert('Error creating tag. Please try again.');
+                } 
+
+
+                const errorData = await response.json();
+                
+                if(response.status === 422) {
+
+                    const el = document.getElementById(`error-tags`);
+
+                    el.textContent = errorData.description;
+                    el.style.color = 'red';
                 }
+                
             } catch (error) {
-                console.error('Error:', error);
                 alert('Error creating tag. Please try again.');
             }
         });

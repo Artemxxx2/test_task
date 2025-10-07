@@ -253,7 +253,7 @@
         function initTagsSelect() {
             tagsSelect = new TomSelect('#tags', {
                 plugins: ['remove_button'],
-                create: true, 
+                create: false, 
                 maxItems: null,
                 valueField: '@id',
                 labelField: 'name',
@@ -333,7 +333,6 @@
 
         function openModal() {
             document.getElementById('createModal').classList.add('active');
-            // Инициализируем Tom Select при открытии модального окна
             if (!tagsSelect) {
                 initTagsSelect();
             }
@@ -342,7 +341,6 @@
         function closeModal() {
             document.getElementById('createModal').classList.remove('active');
             document.getElementById('createPostForm').reset();
-            // Очищаем Tom Select
             if (tagsSelect) {
                 tagsSelect.clear();
             }
