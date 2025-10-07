@@ -1,6 +1,7 @@
 App\Entity\Tag:
     operations:
-        ApiPlatform\Metadata\GetCollection: ~
+        ApiPlatform\Metadata\GetCollection:
+            filters: ['tag.search_filter']
         ApiPlatform\Metadata\POST:
             method: 'POST'
             denormalizationContext:
