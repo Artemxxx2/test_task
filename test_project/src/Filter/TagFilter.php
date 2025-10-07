@@ -13,7 +13,19 @@ final class TagFilter implements FilterInterface
 {
     public function apply(QueryBuilder $queryBuilder, QueryNameGeneratorInterface $queryNameGenerator, string $resourceClass, ?Operation $operation = null, array $context = []): void
     {
+        if (!isset($context['filters']['tagid'])) {
+            return;
+        }
 
+        $tagId = (int)$context['filters']['tagid'];
+        $rootAlias = $queryBuilder->getRootAliases()[0];
+        $tagAlias = $queryNameGenerator->generateJoinAlias('tags');
+        $parameterName = $queryNameGenerator->generateParameterName('tagId');
+
+        $queryBuilder
+            ->innerJoin(sprintf('%s.tags', $rootAlias), $tagAlias)
+            ->andWhere(sprintf('%s.id = :%s', $tagAlias, $parameterName))
+            ->setParameter($parameterName, $tagId);
     }
 
     public function getDescription(string $resourceClass): array
