@@ -4,8 +4,40 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Posts</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.css" rel="stylesheet">
+    
     <style>
-        * {
+        .ts-wrapper {
+            width: 100%;
+        }
+        
+        .ts-control {
+            min-height: 42px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 4px 8px;
+            background: white;
+        }
+        
+        .ts-dropdown {
+            border-radius: 4px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .tag-option {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .tag-count {
+            color: #999;
+            font-size: 0.85em;
+            margin-left: 8px;
+        }
+
+                * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
@@ -629,6 +661,7 @@
                 width: 100%;
             }
         }
+
     </style>
 </head>
 <body>
@@ -647,7 +680,7 @@
         <div class="tags-filter">
             <div class="post__header">
                 <div class="tags-filter-header">🏷️ Filter by tags</div>
-                <a style="text-decoration:none;color:white;" href="/tags" />Go to tags page</a>
+                <a style="text-decoration:none;color:white;" href="/tags">Go to tags page</a>
             </div>
             <div class="tags-list">
                 <div class="tag-filter active" data-tag="all" onclick="filterByTag('all')">
@@ -791,7 +824,7 @@
                 </div>
                 <div class="form-group">
                     <label for="tags">Tags</label>
-                    <input type="text" id="tags" name="tags" placeholder="e.g., tech, tutorial, news (comma-separated)">
+                    <select id="tags" name="tags[]" multiple placeholder="Начните вводить теги..."></select>
                 </div>
                 <div class="form-actions">
                     <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
@@ -820,8 +853,54 @@
         </div>
     </div>
 
+    <!-- Tom Select JS -->
+    <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
+
     <script>
         let postIdToDelete = null;
+        let tagsSelect = null;
+
+        // Инициализация Tom Select для тегов
+        function initTagsSelect() {
+            tagsSelect = new TomSelect('#tags', {
+                plugins: ['remove_button'],
+                create: true, // Можно создавать новые теги
+                maxItems: null,
+                valueField: 'name',
+                labelField: 'name',
+                searchField: 'name',
+                placeholder: 'Начните вводить или выберите теги...',
+                loadThrottle: 300,
+                load: function(query, callback) {
+                    if (!query.length) return callback();
+                    
+                    fetch('/api/tags?name=' + encodeURIComponent(query))
+                        .then(response => response.json())
+                        .then(json => {
+                            // Если API возвращает массив объектов с полем 'hydra:member'
+                            const tags = json['hydra:member'] || json;
+                            callback(tags);
+                        })
+                        .catch(() => {
+                            callback();
+                        });
+                },
+                render: {
+                    option: function(item, escape) {
+                        return `<div class="tag-option">
+                            <span class="tag-name">${escape(item.name)}</span>
+                            ${item.postCount ? `<span class="tag-count">(${escape(item.postCount)} posts)</span>` : ''}
+                        </div>`;
+                    },
+                    item: function(item, escape) {
+                        return `<div>${escape(item.name)}</div>`;
+                    },
+                    no_results: function(data, escape) {
+                        return '<div class="no-results">Нажмите Enter, чтобы создать новый тег "' + escape(data.input) + '"</div>';
+                    }
+                }
+            });
+        }
 
         function openDeleteModal(postId) {
             postIdToDelete = postId;
@@ -865,11 +944,19 @@
 
         function openModal() {
             document.getElementById('createModal').classList.add('active');
+            // Инициализируем Tom Select при открытии модального окна
+            if (!tagsSelect) {
+                initTagsSelect();
+            }
         }
 
         function closeModal() {
             document.getElementById('createModal').classList.remove('active');
             document.getElementById('createPostForm').reset();
+            // Очищаем Tom Select
+            if (tagsSelect) {
+                tagsSelect.clear();
+            }
         }
 
         document.getElementById('createModal').addEventListener('click', function(e) {
@@ -906,10 +993,14 @@
             e.preventDefault();
             
             const formData = new FormData(this);
+            
+            // Получаем выбранные теги из Tom Select
+            const selectedTags = tagsSelect ? tagsSelect.getValue() : [];
+            
             const data = {
                 title: formData.get('title'),
                 content: formData.get('content'),
-                tags: formData.get('tags').split(',').map(t => t.trim()).filter(t => t)
+                tags: selectedTags // Массив названий тегов
             };
 
             try {
@@ -926,6 +1017,8 @@
                     closeModal();
                     window.location.reload();
                 } else {
+                    const error = await response.json();
+                    console.error('Error details:', error);
                     alert('Error creating post. Please try again.');
                 }
             } catch (error) {
