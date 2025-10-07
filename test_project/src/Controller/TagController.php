@@ -38,7 +38,7 @@ class TagController extends AbstractController
         );
         
         return $this->render('tags/tags.html.twig', [
-            'posts' => $tags,
+            'tags' => $tags,
             'currentPage' => $tags->getCurrentPage(),
             'lastPage' => $tags->getLastPage(),
             'itemsPerPage' => $tags->getItemsPerPage()
