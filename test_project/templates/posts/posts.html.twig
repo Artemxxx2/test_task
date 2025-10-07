@@ -20,34 +20,9 @@
             </button>
         </header>
 
-        <!-- Tags Filter -->
         <div class="tags-filter">
             <div class="post__header">
-                <div class="tags-filter-header">🏷️ Filter by tags</div>
                 <a style="text-decoration:none;color:white;" href="/tags">Go to tags page</a>
-            </div>
-            <div class="tags-list">
-                <div class="tag-filter active" data-tag="all" onclick="filterByTag('all')">
-                    All Posts
-                </div>
-                {% if posts is defined %}
-                    {% set allTags = [] %}
-                    {% for post in posts %}
-                        {% if post.tags is defined %}
-                            {% for tag in post.tags %}
-                                {% set tagName = tag.name ?? tag %}
-                                {% if tagName not in allTags %}
-                                    {% set allTags = allTags|merge([tagName]) %}
-                                {% endif %}
-                            {% endfor %}
-                        {% endif %}
-                    {% endfor %}
-                    {% for tagName in allTags %}
-                        <div class="tag-filter" data-tag="{{ tagName }}" onclick="filterByTag('{{ tagName }}')">
-                            {{ tagName }}
-                        </div>
-                    {% endfor %}
-                {% endif %}
             </div>
         </div>
 
@@ -161,14 +136,17 @@
                 <div class="form-group">
                     <label for="title">Title *</label>
                     <input type="text" id="title" name="title" required placeholder="Enter post title">
+                    <div id="error-title"></div>
                 </div>
                 <div class="form-group">
                     <label for="content">Content *</label>
                     <textarea id="content" name="content" required placeholder="Write your post content..."></textarea>
+                    <div id="error-content"></div>
                 </div>
                 <div class="form-group">
                     <label for="tags">Tags</label>
-                    <select id="tags" name="tags[]" multiple placeholder="Начните вводить теги..."></select>
+                    <select id="tags" name="tags[]" multiple placeholder="Please enter the tags..."></select>
+                    <div id="error-tags"></div>
                 </div>
                 <div class="form-actions">
                     <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
@@ -196,16 +174,36 @@
         </div>
     </div>
 
+    {% include 'components/success_modal.html.twig' with {
+        'id': 'successModal',
+        'title': 'Success!',
+        'message': 'Your Post has been added successfully',
+        'buttonText': 'Got it!',
+        'onClose': 'closeSuccessModal()'
+    } %}
+
     <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
 
     <script>
         let postIdToDelete = null;
         let tagsSelect = null;
 
+
+        function closeSuccessModal() {
+            document.getElementById('successModal').classList.remove('active');
+            setTimeout(() => {
+                window.location.reload();
+            }, 300);
+        }
+
+        function showSuccessModal() {
+            document.getElementById('successModal').classList.add('active');
+        }
+
         function initTagsSelect() {
             tagsSelect = new TomSelect('#tags', {
                 plugins: ['remove_button'],
-                create: true, 
+                create: false, 
                 maxItems: null,
                 valueField: '@id',
                 labelField: 'name',
@@ -281,7 +279,6 @@
 
         function openModal() {
             document.getElementById('createModal').classList.add('active');
-            // Инициализируем Tom Select при открытии модального окна
             if (!tagsSelect) {
                 initTagsSelect();
             }
@@ -290,7 +287,6 @@
         function closeModal() {
             document.getElementById('createModal').classList.remove('active');
             document.getElementById('createPostForm').reset();
-            // Очищаем Tom Select
             if (tagsSelect) {
                 tagsSelect.clear();
             }
@@ -309,35 +305,17 @@
             }
         });
 
-        function filterByTag(tagName) {
-            document.querySelectorAll('.tag-filter').forEach(filter => {
-                filter.classList.remove('active');
-            });
-            document.querySelector(`[data-tag="${tagName}"]`).classList.add('active');
-
-            const posts = document.querySelectorAll('.post');
-            posts.forEach(post => {
-                const postTags = post.dataset.tags.split(',');
-                if (tagName === 'all' || postTags.includes(tagName)) {
-                    post.style.display = 'block';
-                } else {
-                    post.style.display = 'none';
-                }
-            });
-        }
-
         document.getElementById('createPostForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
             const formData = new FormData(this);
             
-            // Получаем выбранные теги из Tom Select
             const selectedTags = tagsSelect ? tagsSelect.getValue() : [];
             
             const data = {
                 title: formData.get('title'),
                 content: formData.get('content'),
-                tags: selectedTags // Массив названий тегов
+                tags: selectedTags 
             };
 
             try {
@@ -350,14 +328,22 @@
                 });
 
                 if (response.ok) {
-                    alert('Post created successfully!');
                     closeModal();
-                    window.location.reload();
-                } else {
-                    const error = await response.json();
-                    console.error('Error details:', error);
-                    alert('Error creating post. Please try again.');
+                    showSuccessModal()                
+                } 
+
+                const errorData = await response.json();
+
+                
+                if(errorData.status === 422) {
+                    for(prop of errorData.violations) {
+                        let el = document.getElementById(`error-${prop.propertyPath}`);
+                        el.textContent = prop.message;
+                        el.style.color = 'red';
+                    }
+
                 }
+
             } catch (error) {
                 console.error('Error:', error);
                 alert('Error creating post. Please try again.');
