@@ -1,78 +1,575 @@
-<html lang="ru">
+<!DOCTYPE html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Посты</title>
+    <title>Posts</title>
     <style>
-        body {
-            font-family: system-ui, -apple-system, sans-serif;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            line-height: 1.6;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-        .post {
-            border: 1px solid #ddd;
-            border-radius: 8px;
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+            color: white;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .header-left {
+            flex: 1;
+        }
+
+        h1 {
+            font-size: 3em;
+            font-weight: 800;
+            margin-bottom: 5px;
+            text-shadow: 0 2px 20px rgba(0,0,0,0.2);
+        }
+
+        .subtitle {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .create-btn {
+            background: white;
+            color: #667eea;
+            padding: 12px 28px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 1em;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .create-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+
+        .tags-filter {
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(10px);
             padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+        }
+
+        .tags-filter-header {
+            color: white;
+            font-weight: 700;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+
+        .tags-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .tag-filter {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            padding: 8px 18px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .tag-filter:hover {
+            background: rgba(255,255,255,0.3);
+            transform: scale(1.05);
+        }
+
+        .tag-filter.active {
+            background: white;
+            color: #667eea;
+            border-color: white;
+        }
+
+        .posts-grid {
+            display: grid;
+            gap: 30px;
+        }
+
+        .post {
+            background: white;
+            border-radius: 20px;
+            padding: 35px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .post::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+        }
+
+        .post:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 50px rgba(0,0,0,0.2);
+        }
+
+        .post h2 {
+            font-size: 1.8em;
+            margin-bottom: 15px;
+            color: #2d3748;
+            line-height: 1.3;
+        }
+
+        .post h2 a {
+            color: inherit;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .post h2 a:hover {
+            color: #667eea;
+        }
+
+        .post-meta {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            color: #718096;
+            font-size: 0.9em;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .post-meta::before {
+            content: '📅';
+            font-size: 1.2em;
+        }
+
+        .post-content {
+            color: #4a5568;
+            font-size: 1.05em;
+            line-height: 1.7;
             margin-bottom: 20px;
         }
-        .post h2 {
-            margin-top: 0;
-        }
-        .post-meta {
-            color: #666;
-            font-size: 0.9em;
-            margin-bottom: 10px;
-        }
+
         .post-tags {
-            margin-top: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 20px;
         }
+
         .tag {
-            background: #e0e0e0;
-            padding: 4px 8px;
-            border-radius: 4px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 6px 14px;
+            border-radius: 20px;
             font-size: 0.85em;
-            margin-right: 5px;
+            font-weight: 600;
+            transition: transform 0.2s ease;
         }
-        a {
-            color: #0066cc;
-            text-decoration: none;
+
+        .tag:hover {
+            transform: scale(1.05);
         }
-        a:hover {
-            text-decoration: underline;
+
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+        }
+
+        .empty-state-icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+        }
+
+        .empty-state p {
+            font-size: 1.3em;
+            color: #718096;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .modal-header h2 {
+            font-size: 2em;
+            color: #2d3748;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 2em;
+            color: #718096;
+            cursor: pointer;
+            transition: color 0.3s ease;
+            padding: 0;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .close-btn:hover {
+            color: #2d3748;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #2d3748;
+            font-weight: 600;
+            font-size: 0.95em;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 1em;
+            font-family: inherit;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102,126,234,0.1);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 150px;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 14px 24px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1em;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102,126,234,0.4);
+        }
+
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #4a5568;
+        }
+
+        .btn-secondary:hover {
+            background: #cbd5e0;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2em;
+            }
+
+            .post {
+                padding: 25px;
+            }
+
+            .post h2 {
+                font-size: 1.4em;
+            }
+
+            .modal-content {
+                padding: 25px;
+            }
+
+            header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
         }
     </style>
 </head>
 <body>
-    {% if posts is defined %}
-        {% for post in posts %}
-            <article class="post">
-                <h2>
-                    <a href="/posts/{{ post.id }}.html">{{ post.title }}</a>
-                </h2>
-                
-                <div class="post-meta">
-                    {% if post.createdAt is defined %}
-                        {{ post.createdAt|date('d.m.Y H:i') }}
-                    {% endif %}
+    <div class="container">
+        <header>
+            <div class="header-left">
+                <h1>📝 Blog</h1>
+                <p class="subtitle">Sharing thoughts and ideas</p>
+            </div>
+            <button class="create-btn" onclick="openModal()">
+                <span>✨</span> Create Post
+            </button>
+        </header>
+
+        <!-- Tags Filter -->
+        <div class="tags-filter">
+            <div class="tags-filter-header">🏷️ Filter by tags</div>
+            <div class="tags-list">
+                <div class="tag-filter active" data-tag="all" onclick="filterByTag('all')">
+                    All Posts
                 </div>
-                
-                {% if post.content is defined %}
-                    <p>{{ post.content|slice(0, 200) }}{% if post.content|length > 200 %}...{% endif %}</p>
+                {% if posts is defined %}
+                    {% set allTags = [] %}
+                    {% for post in posts %}
+                        {% if post.tags is defined %}
+                            {% for tag in post.tags %}
+                                {% set tagName = tag.name ?? tag %}
+                                {% if tagName not in allTags %}
+                                    {% set allTags = allTags|merge([tagName]) %}
+                                {% endif %}
+                            {% endfor %}
+                        {% endif %}
+                    {% endfor %}
+                    {% for tagName in allTags %}
+                        <div class="tag-filter" data-tag="{{ tagName }}" onclick="filterByTag('{{ tagName }}')">
+                            {{ tagName }}
+                        </div>
+                    {% endfor %}
                 {% endif %}
-                
-                {% if post.tags is defined and post.tags is not empty %}
-                    <div class="post-tags">
-                        {% for tag in post.tags %}
-                            <span class="tag">{{ tag.name ?? tag }}</span>
-                        {% endfor %}
-                    </div>
-                {% endif %}
-            </article>
-        {% endfor %}
-    {% else %}
-        <p>Постов пока нет</p>
-    {% endif %}
+            </div>
+        </div>
+
+        {% if posts is defined and posts|length > 0 %}
+            <div class="posts-grid" id="postsGrid">
+                {% for post in posts %}
+                    <article class="post" data-tags="{% if post.tags is defined %}{% for tag in post.tags %}{{ tag.name ?? tag }}{% if not loop.last %},{% endif %}{% endfor %}{% endif %}">
+                        <h2>
+                            <a href="/posts/{{ post.id }}.html">{{ post.title }}</a>
+                        </h2>
+                        
+                        <div class="post-meta">
+                            {% if post.createdAt is defined %}
+                                {{ post.createdAt|date('M d, Y H:i') }}
+                            {% endif %}
+                        </div>
+                        
+                        {% if post.content is defined %}
+                            <div class="post-content">
+                                {{ post.content|slice(0, 200) }}{% if post.content|length > 200 %}...{% endif %}
+                            </div>
+                        {% endif %}
+                        
+                        {% if post.tags is defined and post.tags is not empty %}
+                            <div class="post-tags">
+                                {% for tag in post.tags %}
+                                    <span class="tag">{{ tag.name ?? tag }}</span>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </article>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <div class="empty-state-icon">🤔</div>
+                <p>No posts yet</p>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Modal for Create Post -->
+    <div class="modal" id="createModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Create New Post</h2>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
+            <form action="/api/posts" method="POST" id="createPostForm">
+                <div class="form-group">
+                    <label for="title">Title *</label>
+                    <input type="text" id="title" name="title" required placeholder="Enter post title">
+                </div>
+                <div class="form-group">
+                    <label for="content">Content *</label>
+                    <textarea id="content" name="content" required placeholder="Write your post content..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="tags">Tags</label>
+                    <input type="text" id="tags" name="tags" placeholder="e.g., tech, tutorial, news (comma-separated)">
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create Post</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function openModal() {
+            document.getElementById('createModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('createModal').classList.remove('active');
+            document.getElementById('createPostForm').reset();
+        }
+
+        document.getElementById('createModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeModal();
+            }
+        });
+
+        function filterByTag(tagName) {
+            document.querySelectorAll('.tag-filter').forEach(filter => {
+                filter.classList.remove('active');
+            });
+            document.querySelector(`[data-tag="${tagName}"]`).classList.add('active');
+
+            const posts = document.querySelectorAll('.post');
+            posts.forEach(post => {
+                const postTags = post.dataset.tags.split(',');
+                if (tagName === 'all' || postTags.includes(tagName)) {
+                    post.style.display = 'block';
+                } else {
+                    post.style.display = 'none';
+                }
+            });
+        }
+
+        document.getElementById('createPostForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const data = {
+                title: formData.get('title'),
+                content: formData.get('content'),
+                tags: formData.get('tags').split(',').map(t => t.trim()).filter(t => t)
+            };
+
+            try {
+                const response = await fetch('/api/posts', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                if (response.ok) {
+                    alert('Post created successfully!');
+                    closeModal();
+                    window.location.reload();
+                } else {
+                    alert('Error creating post. Please try again.');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error creating post. Please try again.');
+            }
+        });
+    </script>
 </body>
 </html>

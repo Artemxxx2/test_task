@@ -7,36 +7,57 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Attribute\Groups;
 
+#[ORM\HasLifecycleCallbacks]
 #[ORM\Entity(repositoryClass: PostRepository::class)]
 class Post
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['post:read','post:write'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['post:read','post:write'])]
     private ?string $title = null;
 
     #[ORM\Column]
+    #[Groups(['post:read'])]
     private ?\DateTimeImmutable $created_at = null;
 
     #[ORM\Column]
+    #[Groups(['post:read'])]
     private ?\DateTimeImmutable $updated_at = null;
 
     #[ORM\Column(type: Types::TEXT)]
+    #[Groups(['post:read','post:write'])]
     private ?string $content = null;
 
     /**
      * @var Collection<int, Tag>
      */
     #[ORM\ManyToMany(targetEntity: Tag::class, mappedBy: 'posts')]
+    #[Groups(['post:read','post:write'])]
     private Collection $tags;
 
     public function __construct()
     {
         $this->tags = new ArrayCollection();
+    }
+
+    #[ORM\PrePersist]
+    public function onPrePersist()
+    {
+        $this->setCreatedAt(new \DateTimeImmutable());
+        $this->setUpdatedAt(new \DateTimeImmutable());
+    }
+
+    #[ORM\PreUpdate]
+    public function onPreUpdate()
+    {
+        $this->setUpdatedAt(new \DateTimeImmutable());
     }
 
     public function getId(): ?int
