@@ -7,6 +7,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\HasLifecycleCallbacks]
 #[ORM\Entity(repositoryClass: TagRepository::class)]
@@ -20,6 +21,10 @@ class Tag
 
     #[ORM\Column(length: 255)]
     #[Groups(['tag:read','tag:write'])]
+    #[Assert\Length(
+        min: 3,
+        minMessage: 'Min title length is {{ limit }}',
+    )]    
     private ?string $name = null;
 
     #[ORM\Column]

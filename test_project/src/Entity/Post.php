@@ -8,6 +8,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\HasLifecycleCallbacks]
 #[ORM\Entity(repositoryClass: PostRepository::class)]
@@ -21,6 +22,10 @@ class Post
 
     #[ORM\Column(length: 255)]
     #[Groups(['post:read','post:write'])]
+    #[Assert\Length(
+        min: 3,
+        minMessage: 'Min title length is {{ limit }}',
+    )]
     private ?string $title = null;
 
     #[ORM\Column]
@@ -33,6 +38,10 @@ class Post
 
     #[ORM\Column(type: Types::TEXT)]
     #[Groups(['post:read','post:write'])]
+    #[Assert\Length(
+        min: 20,
+        minMessage: 'Min title length is {{ limit }}',
+    )]
     private ?string $content = null;
 
     /**
@@ -40,6 +49,10 @@ class Post
      */
     #[ORM\ManyToMany(targetEntity: Tag::class, mappedBy: 'posts')]
     #[Groups(['post:read','post:write'])]
+    #[Assert\Count(
+        min: 1,
+        minMessage: 'Post should have at least 1 tag'
+    )]
     private Collection $tags;
 
     public function __construct()

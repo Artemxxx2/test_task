@@ -14,4 +14,5 @@ App\Entity\Post:
             path: '/posts'
             filters:
                 - post.filter_tag
-        ApiPlatform\Metadata\Delete: ~                           
+        ApiPlatform\Metadata\Delete: ~      
+        ApiPlatform\Metadata\Patch: ~                      

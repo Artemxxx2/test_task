@@ -4,7 +4,328 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ post.title ?? 'Post' }}</title>
-     <link rel="stylesheet" href="{{ asset('css/post.css') }}">
+    
+    <!-- Tom Select CSS для тегов -->
+    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ asset('css/post.css') }}">
+    
+    <style>
+        /* Стили для модального окна */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            backdrop-filter: blur(4px);
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            color: #333;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 2rem;
+            cursor: pointer;
+            color: #999;
+            line-height: 1;
+            padding: 0;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+
+        .close-btn:hover {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group input[type="text"],
+        .form-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 1rem;
+            transition: border-color 0.2s;
+            font-family: inherit;
+        }
+
+        .form-group input[type="text"]:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-group textarea {
+            min-height: 200px;
+            resize: vertical;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-top: 2rem;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 600;
+        }
+
+        .btn-secondary {
+            background: #e0e0e0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #d0d0d0;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .edit-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
+        }
+
+        .edit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .post-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+
+        .post-header-content {
+            flex: 1;
+        }
+
+        /* Tom Select стили */
+        .ts-wrapper {
+            width: 100%;
+        }
+
+        .ts-control {
+            min-height: 42px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 4px 8px;
+            background: white;
+        }
+
+        .ts-dropdown {
+            border-radius: 6px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .tag-option {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .tag-count {
+            color: #999;
+            font-size: 0.85em;
+            margin-left: 8px;
+        }
+
+        /* Success Modal */
+        .success-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 2000;
+            backdrop-filter: blur(4px);
+            animation: fadeIn 0.3s ease;
+        }
+
+        .success-modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .success-modal-content {
+            background: white;
+            border-radius: 16px;
+            padding: 2.5rem;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.4s ease;
+        }
+
+        .success-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 1.5rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: scaleIn 0.5s ease;
+        }
+
+        .success-icon svg {
+            width: 50px;
+            height: 50px;
+            stroke: white;
+            stroke-width: 3;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .success-checkmark {
+            stroke-dasharray: 100;
+            stroke-dashoffset: 100;
+            animation: drawCheck 0.6s ease 0.3s forwards;
+        }
+
+        .success-modal h2 {
+            margin: 0 0 0.5rem 0;
+            color: #333;
+            font-size: 1.75rem;
+        }
+
+        .success-modal p {
+            margin: 0 0 2rem 0;
+            color: #666;
+            font-size: 1rem;
+        }
+
+        .success-modal .btn {
+            width: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 0.875rem 2rem;
+            font-size: 1rem;
+        }
+
+        .success-modal .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(30px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes scaleIn {
+            from {
+                transform: scale(0);
+            }
+            to {
+                transform: scale(1);
+            }
+        }
+
+        @keyframes drawCheck {
+            to {
+                stroke-dashoffset: 0;
+            }
+        }
+    </style>
 </head>
 <body>
     <div class="container">
@@ -15,13 +336,23 @@
         {% if post is defined %}
             <article class="post-article">
                 <div class="post-header">
-                    <h1>{{ post.title }}</h1>
-                    
-                    <div class="post-meta">
-                        {% if post.createdAt is defined %}
-                            {{ post.createdAt|date('M d, Y H:i') }}
-                        {% endif %}
+                    <div class="post-header-content">
+                        <h1>{{ post.title }}</h1>
+                        
+                        <div class="post-meta">
+                            {% if post.createdAt is defined %}
+                                {{ post.createdAt|date('M d, Y H:i') }}
+                            {% endif %}
+                        </div>
                     </div>
+                    
+                    <button class="edit-btn" onclick="openEditModal()">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                        </svg>
+                        Edit Post
+                    </button>
                 </div>
                 
                 {% if post.content is defined %}
@@ -46,5 +377,226 @@
             </div>
         {% endif %}
     </div>
+
+    <!-- Edit Modal -->
+    <div class="modal" id="editModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Edit Post</h2>
+                <button class="close-btn" onclick="closeEditModal()">&times;</button>
+            </div>
+            <form id="editPostForm">
+                <div class="form-group">
+                    <label for="title">Title *</label>
+                    <input type="text" id="title" name="title" required placeholder="Enter post title">
+                </div>
+                <div class="form-group">
+                    <label for="content">Content *</label>
+                    <textarea id="content" name="content" required placeholder="Write your post content..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="tags">Tags</label>
+                    <select id="tags" name="tags[]" multiple placeholder="Начните вводить теги..."></select>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeEditModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {% include 'components/success_modal.html.twig' with {
+        'id': 'successModal',
+        'title': 'Success!',
+        'message': 'Your post has been updated successfully',
+        'buttonText': 'Got it!',
+        'onClose': 'closeSuccessModal()'
+    } %}
+
+
+    <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
+
+    <script>
+        const postData = {
+            id: {{ post.id ?? 'null' }},
+            title: {{ post.title|json_encode|raw }},
+            content: {{ post.content|json_encode|raw }},
+            tags: [
+                {% if post.tags is defined %}
+                    {% for tag in post.tags %}
+                        {
+                            '@id': '{{ tag['@id'] ?? '/api/tags/' ~ tag.id }}',
+                            'id': {{ tag.id }},
+                            'name': {{ tag.name|json_encode|raw }}
+                        }{% if not loop.last %},{% endif %}
+                    {% endfor %}
+                {% endif %}
+            ]
+        };
+
+        let tagsSelect = null;
+
+        function initTagsSelect() {
+            if (tagsSelect) {
+                tagsSelect.destroy();
+            }
+
+            tagsSelect = new TomSelect('#tags', {
+                plugins: ['remove_button'],
+                create: true,
+                maxItems: null,
+                valueField: '@id',
+                labelField: 'name',
+                searchField: 'name',
+                placeholder: 'Начните вводить или выберите теги...',
+                loadThrottle: 300,
+                
+                createFilter: function(input) {
+                    return input.length >= 2;
+                },
+                
+                load: function(query, callback) {
+                    if (!query.length) return callback();
+                    
+                    fetch('/api/tags?name=' + encodeURIComponent(query))
+                        .then(response => response.json())
+                        .then(json => {
+                            const tags = json['hydra:member'] || json;
+                            callback(tags);
+                        })
+                        .catch(() => {
+                            callback();
+                        });
+                },
+                
+                onCreate: function(input, callback) {
+                    fetch('/api/tags', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ name: input })
+                    })
+                    .then(response => response.json())
+                    .then(newTag => {
+                        callback({
+                            '@id': newTag['@id'] || `/api/tags/${newTag.id}`,
+                            'name': newTag.name,
+                            'id': newTag.id
+                        });
+                    })
+                    .catch(() => {
+                        callback();
+                    });
+                },
+                
+                render: {
+                    option: function(item, escape) {
+                        return `<div class="tag-option">
+                            <span class="tag-name">${escape(item.name)}</span>
+                            ${item.postCount ? `<span class="tag-count">(${escape(item.postCount)} posts)</span>` : ''}
+                        </div>`;
+                    },
+                    item: function(item, escape) {
+                        return `<div>${escape(item.name)}</div>`;
+                    }
+                }
+            });
+
+            if (postData.tags && postData.tags.length > 0) {
+                postData.tags.forEach(tag => {
+                    tagsSelect.addOption(tag);
+                    tagsSelect.addItem(tag['@id']);
+                });
+            }
+        }
+
+        function openEditModal() {
+            document.getElementById('title').value = postData.title || '';
+            document.getElementById('content').value = postData.content || '';
+            
+            initTagsSelect();
+            
+            document.getElementById('editModal').classList.add('active');
+        }
+
+        function closeEditModal() {
+            document.getElementById('editModal').classList.remove('active');
+            document.getElementById('editPostForm').reset();
+            
+            if (tagsSelect) {
+                tagsSelect.destroy();
+                tagsSelect = null;
+            }
+        }
+
+        function showSuccessModal() {
+            document.getElementById('successModal').classList.add('active');
+        }
+
+        function closeSuccessModal() {
+            document.getElementById('successModal').classList.remove('active');
+            setTimeout(() => {
+                window.location.reload();
+            }, 300);
+        }
+
+        document.getElementById('editModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeEditModal();
+            }
+        });
+
+        document.getElementById('successModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeSuccessModal();
+            }
+        });
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeEditModal();
+                if (document.getElementById('successModal').classList.contains('active')) {
+                    closeSuccessModal();
+                }
+            }
+        });
+
+        document.getElementById('editPostForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const selectedTagIRIs = tagsSelect ? tagsSelect.getValue() : [];
+            
+            const data = {
+                title: formData.get('title'),
+                content: formData.get('content'),
+                tags: selectedTagIRIs
+            };
+
+            try {
+                const response = await fetch(`/api/posts/${postData.id}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/merge-patch+json',
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                if (response.ok) {
+                    closeEditModal();
+                    showSuccessModal();
+                } else {
+                    const error = await response.json();
+                    console.error('Error details:', error);
+                    alert('Error updating post. Please try again.');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error updating post. Please try again.');
+            }
+        });
+    </script>
 </body>
 </html>

@@ -32,7 +32,7 @@
                     <article class="tag" data-tags="{% if tag.tags is defined %}{% for tag in tag.tags %}{{ tag.name ?? tag }}{% if not loop.last %},{% endif %}{% endfor %}{% endif %}">
                         <div class="tag__header">                        
                             <h2>
-                                <a href="/tags/{{ tag.id }}.html">{{ tag.name }}</a>
+                                <div>{{ tag.name }}</div>
                             </h2>
                         </div>
                         
@@ -117,7 +117,6 @@
         {% endif %}
     </div>
 
-    <!-- Modal for Create tag -->
     <div class="modal" id="createModal">
         <div class="modal-content">
             <div class="modal-header">
@@ -137,7 +136,25 @@
         </div>
     </div>
 
+    {% include 'components/success_modal.html.twig' with {
+        'id': 'successModal',
+        'title': 'Success!',
+        'message': 'Your tag has been added successfully',
+        'buttonText': 'Got it!',
+        'onClose': 'closeSuccessModal()'
+    } %}
+
     <script>
+        function showSuccessModal() {
+            document.getElementById('successModal').classList.add('active');
+        }
+
+        function closeSuccessModal() {
+            document.getElementById('successModal').classList.remove('active');
+            setTimeout(() => {
+                window.location.reload();
+            }, 300);
+        }
 
         function openModal() {
             document.getElementById('createModal').classList.add('active');
@@ -174,8 +191,9 @@
             e.preventDefault();
             
             const formData = new FormData(this);
+
             const data = {
-                name: 'tagtest',
+                name: formData.get('title'),
             };
 
             try {
@@ -188,9 +206,8 @@
                 });
 
                 if (response.ok) {
-                    alert('tag created successfully!');
                     closeModal();
-                    window.location.reload();
+                    showSuccessModal()
                 } else {
                     alert('Error creating tag. Please try again.');
                 }
