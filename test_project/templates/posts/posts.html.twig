@@ -161,18 +161,14 @@
                 <div class="form-group">
                     <label for="title">Title *</label>
                     <input type="text" id="title" name="title" required placeholder="Enter post title">
-                    <div class="error-content" id="error-title"></div>                    
                 </div>
                 <div class="form-group">
                     <label for="content">Content *</label>
                     <textarea id="content" name="content" required placeholder="Write your post content..."></textarea>
-                    <div class="error-content" id="error-content"></div>
-
                 </div>
                 <div class="form-group">
                     <label for="tags">Tags</label>
-                    <select id="tags" name="tags[]" multiple placeholder="Please enter the tag..."></select>                    <div class="error-content" id="error-content"></div>
-                    <div class="error-content" id="error-tags"></div>                    
+                    <select id="tags" name="tags[]" multiple placeholder="Начните вводить теги..."></select>
                 </div>
                 <div class="form-actions">
                     <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
@@ -182,7 +178,6 @@
         </div>
     </div>
 
-    <!-- Delete Modal -->
     <div class="modal-overlay" id="deleteModal">
         <div class="delete-modal-content">
             <div class="modal-icon">⚠️</div>
@@ -201,59 +196,16 @@
         </div>
     </div>
 
-    {% include 'components/success_modal.html.twig' with {
-        'id': 'successModal',
-        'title': 'Success!',
-        'message': 'Your post has been deleted successfully',
-        'buttonText': 'Got it!',
-        'onClose': 'closeSuccessModal()'
-    } %}
-
     <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
 
     <script>
         let postIdToDelete = null;
         let tagsSelect = null;
 
-
-
-        function showSuccessModal() {
-            document.getElementById('successModal').classList.add('active');
-        }
-
-        function closeSuccessModal() {
-            document.getElementById('successModal').classList.remove('active');
-            setTimeout(() => {
-                window.location.reload();
-            }, 300);
-        }
-
-        document.getElementById('editModal').addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeEditModal();
-            }
-        });
-
-        document.getElementById('successModal').addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeSuccessModal();
-            }
-        });
-
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                closeEditModal();
-                if (document.getElementById('successModal').classList.contains('active')) {
-                    closeSuccessModal();
-                }
-            }
-        });
-
-
         function initTagsSelect() {
             tagsSelect = new TomSelect('#tags', {
                 plugins: ['remove_button'],
-                create: false, 
+                create: true, 
                 maxItems: null,
                 valueField: '@id',
                 labelField: 'name',
@@ -283,9 +235,6 @@
                     item: function(item, escape) {
                         return `<div>${escape(item.name)}</div>`;
                     },
-                    no_results: function(data, escape) {
-                        return '<div class="no-results">Нажмите Enter, чтобы создать новый тег "' + escape(data.input) + '"</div>';
-                    }
                 }
             });
         }
@@ -315,12 +264,11 @@
                 if (response.ok || response.status === 204) {
                     closeDeleteModal();
                     window.location.reload();
-                    showSuccessModal()
                 } else {
                     alert('Error deleting post. Please try again.');
                 }
             } catch (error) {
-
+                console.error('Error:', error);
                 alert('Error deleting post. Please try again.');
             }
         }
@@ -333,6 +281,7 @@
 
         function openModal() {
             document.getElementById('createModal').classList.add('active');
+            // Инициализируем Tom Select при открытии модального окна
             if (!tagsSelect) {
                 initTagsSelect();
             }
@@ -341,6 +290,7 @@
         function closeModal() {
             document.getElementById('createModal').classList.remove('active');
             document.getElementById('createPostForm').reset();
+            // Очищаем Tom Select
             if (tagsSelect) {
                 tagsSelect.clear();
             }
@@ -381,12 +331,13 @@
             
             const formData = new FormData(this);
             
+            // Получаем выбранные теги из Tom Select
             const selectedTags = tagsSelect ? tagsSelect.getValue() : [];
             
             const data = {
                 title: formData.get('title'),
                 content: formData.get('content'),
-                tags: selectedTags 
+                tags: selectedTags // Массив названий тегов
             };
 
             try {
@@ -397,37 +348,18 @@
                     },
                     body: JSON.stringify(data)
                 });
-                
-                console.log(response);
 
                 if (response.ok) {
                     alert('Post created successfully!');
                     closeModal();
                     window.location.reload();
-                } 
-                if(response.status === 422) {
-                    let field =  error.violations.propertyPath;
-
-                    const el = document.getElementById(`error-${field}`);
-                    console.log(el);
-
-                    el.textContent = error.errors[field].join(', ');
-                    el.style.color = 'red';
+                } else {
+                    const error = await response.json();
+                    console.error('Error details:', error);
+                    alert('Error creating post. Please try again.');
                 }
-
             } catch (error) {
-                    console.log(error.violations)
-
-                if(error.status == 422) {
-                    let field =  error.violations.propertyPath;
-
-                    const el = document.getElementById(`error-${field}`);
-                    console.log(el);
-
-                    el.textContent = error.errors[field].join(', ');
-                    el.style.color = 'red';
-                }
-
+                console.error('Error:', error);
                 alert('Error creating post. Please try again.');
             }
         });
