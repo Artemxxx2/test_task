@@ -1,3 +1,5 @@
+version: '3.8'
+
 services:
   mysql:
     image: mysql:5.7
@@ -28,9 +30,7 @@ services:
       - app_network
   
   php:
-    build:
-      context: .                    
-      dockerfile: ./php/dockerfile
+    build: ./php
     container_name: app
     volumes:
       - ./ini/php.ini:/usr/local/etc/php/conf.d/custom-php.ini   
