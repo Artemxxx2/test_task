@@ -1,3 +1,8 @@
 App\Entity\Tag:
     operations:
         ApiPlatform\Metadata\GetCollection: ~
+        ApiPlatform\Metadata\POST:
+            method: 'POST'
+            denormalizationContext:
+                groups: ['tag:write']
+            path: '/tags'

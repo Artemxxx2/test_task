@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Posts</title>
+    <title>tags</title>
     <style>
         * {
             margin: 0;
@@ -114,13 +114,13 @@
             border-color: white;
         }
 
-        .posts-grid {
+        .tags-grid {
             display: grid;
             gap: 30px;
             margin-bottom: 40px;
         }
 
-        .post {
+        .tag {
             background: white;
             border-radius: 20px;
             padding: 35px;
@@ -130,7 +130,7 @@
             overflow: hidden;
         }
 
-        .post::before {
+        .tag::before {
             content: '';
             position: absolute;
             top: 0;
@@ -140,29 +140,29 @@
             background: linear-gradient(90deg, #667eea, #764ba2);
         }
 
-        .post:hover {
+        .tag:hover {
             transform: translateY(-5px);
             box-shadow: 0 15px 50px rgba(0,0,0,0.2);
         }
 
-        .post h2 {
+        .tag h2 {
             font-size: 1.8em;
             margin-bottom: 15px;
             color: #2d3748;
             line-height: 1.3;
         }
 
-        .post h2 a {
+        .tag h2 a {
             color: inherit;
             text-decoration: none;
             transition: color 0.3s ease;
         }
 
-        .post h2 a:hover {
+        .tag h2 a:hover {
             color: #667eea;
         }
 
-        .post-meta {
+        .tag-meta {
             display: flex;
             align-items: center;
             gap: 15px;
@@ -173,19 +173,19 @@
             border-bottom: 1px solid #e2e8f0;
         }
 
-        .post-meta::before {
+        .tag-meta::before {
             content: '📅';
             font-size: 1.2em;
         }
 
-        .post-content {
+        .tag-content {
             color: #4a5568;
             font-size: 1.05em;
             line-height: 1.7;
             margin-bottom: 20px;
         }
 
-        .post-tags {
+        .tag-tags {
             display: flex;
             flex-wrap: wrap;
             gap: 10px;
@@ -561,7 +561,7 @@
             box-shadow: 0 5px 15px rgba(239, 68, 68, 0.4);
         }
 
-        .post__header {
+        .tag__header {
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
@@ -588,11 +588,11 @@
                 font-size: 2em;
             }
 
-            .post {
+            .tag {
                 padding: 25px;
             }
 
-            .post h2 {
+            .tag h2 {
                 font-size: 1.4em;
             }
 
@@ -639,50 +639,27 @@
                 <p class="subtitle">Sharing thoughts and ideas</p>
             </div>
             <button class="create-btn" onclick="openModal()">
-                <span>✨</span> Create Post
+                <span>✨</span> Create tag
             </button>
         </header>
 
         <!-- Tags Filter -->
         <div class="tags-filter">
-            <div class="post__header">
-                <div class="tags-filter-header">🏷️ Filter by tags</div>
-                <a style="text-decoration:none;color:white;" href="/tags" />Go to tags page</a>
+            <div>
+                <a style="text-decoration:none;color:white;" href="/" />Go to posts page</a>
             </div>
-            <div class="tags-list">
-                <div class="tag-filter active" data-tag="all" onclick="filterByTag('all')">
-                    All Posts
-                </div>
-                {% if posts is defined %}
-                    {% set allTags = [] %}
-                    {% for post in posts %}
-                        {% if post.tags is defined %}
-                            {% for tag in post.tags %}
-                                {% set tagName = tag.name ?? tag %}
-                                {% if tagName not in allTags %}
-                                    {% set allTags = allTags|merge([tagName]) %}
-                                {% endif %}
-                            {% endfor %}
-                        {% endif %}
-                    {% endfor %}
-                    {% for tagName in allTags %}
-                        <div class="tag-filter" data-tag="{{ tagName }}" onclick="filterByTag('{{ tagName }}')">
-                            {{ tagName }}
-                        </div>
-                    {% endfor %}
-                {% endif %}
-            </div>
+
         </div>
 
-        {% if posts is defined and posts|length > 0 %}
-            <div class="posts-grid" id="postsGrid">
-                {% for post in posts %}
-                    <article class="post" data-tags="{% if post.tags is defined %}{% for tag in post.tags %}{{ tag.name ?? tag }}{% if not loop.last %},{% endif %}{% endfor %}{% endif %}">
-                        <div class="post__header">                        
+        {% if tags is defined and tags|length > 0 %}
+            <div class="tags-grid" id="tagsGrid">
+                {% for tag in tags %}
+                    <article class="tag" data-tags="{% if tag.tags is defined %}{% for tag in tag.tags %}{{ tag.name ?? tag }}{% if not loop.last %},{% endif %}{% endfor %}{% endif %}">
+                        <div class="tag__header">                        
                             <h2>
-                                <a href="/posts/{{ post.id }}.html">{{ post.title }}</a>
+                                <a href="/tags/{{ tag.id }}.html">{{ tag.title }}</a>
                             </h2>
-                            <button onclick="openDeleteModal({{ post.id }})" class="delete-btn">
+                            <button onclick="openDeleteModal({{ tag.id }})" class="delete-btn">
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <polyline points="3 6 5 6 21 6"></polyline>
                                     <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
@@ -692,21 +669,21 @@
                             </button>
                         </div>
                         
-                        <div class="post-meta">
-                            {% if post.createdAt is defined %}
-                                {{ post.createdAt|date('M d, Y H:i') }}
+                        <div class="tag-meta">
+                            {% if tag.createdAt is defined %}
+                                {{ tag.createdAt|date('M d, Y H:i') }}
                             {% endif %}
                         </div>
                         
-                        {% if post.content is defined %}
-                            <div class="post-content">
-                                {{ post.content|slice(0, 200) }}{% if post.content|length > 200 %}...{% endif %}
+                        {% if tag.content is defined %}
+                            <div class="tag-content">
+                                {{ tag.content|slice(0, 200) }}{% if tag.content|length > 200 %}...{% endif %}
                             </div>
                         {% endif %}
                         
-                        {% if post.tags is defined and post.tags is not empty %}
-                            <div class="post-tags">
-                                {% for tag in post.tags %}
+                        {% if tag.tags is defined and tag.tags is not empty %}
+                            <div class="tag-tags">
+                                {% for tag in tag.tags %}
                                     <span class="tag">{{ tag.name ?? tag }}</span>
                                 {% endfor %}
                             </div>
@@ -768,34 +745,26 @@
         {% else %}
             <div class="empty-state">
                 <div class="empty-state-icon">🤔</div>
-                <p>No posts yet</p>
+                <p>No tags yet</p>
             </div>
         {% endif %}
     </div>
 
-    <!-- Modal for Create Post -->
+    <!-- Modal for Create tag -->
     <div class="modal" id="createModal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>Create New Post</h2>
+                <h2>Create New tag</h2>
                 <button class="close-btn" onclick="closeModal()">&times;</button>
             </div>
-            <form action="/api/posts" method="POST" id="createPostForm">
+            <form action="/api/tags" method="tag" id="createtagForm">
                 <div class="form-group">
-                    <label for="title">Title *</label>
-                    <input type="text" id="title" name="title" required placeholder="Enter post title">
-                </div>
-                <div class="form-group">
-                    <label for="content">Content *</label>
-                    <textarea id="content" name="content" required placeholder="Write your post content..."></textarea>
-                </div>
-                <div class="form-group">
-                    <label for="tags">Tags</label>
-                    <input type="text" id="tags" name="tags" placeholder="e.g., tech, tutorial, news (comma-separated)">
+                    <label for="title">Name *</label>
+                    <input type="text" id="title" name="title" required placeholder="Enter tag name">
                 </div>
                 <div class="form-actions">
                     <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Create Post</button>
+                    <button type="submit" class="btn btn-primary">Create tag</button>
                 </div>
             </form>
         </div>
@@ -805,9 +774,9 @@
     <div class="modal-overlay" id="deleteModal">
         <div class="delete-modal-content">
             <div class="modal-icon">⚠️</div>
-            <h2 class="modal-title">Delete Post?</h2>
+            <h2 class="modal-title">Delete tag?</h2>
             <p class="modal-text">
-                Are you sure you want to delete this post? This action cannot be undone.
+                Are you sure you want to delete this tag? This action cannot be undone.
             </p>
             <div class="modal-buttons">
                 <button class="modal-btn modal-btn-cancel" onclick="closeDeleteModal()">
@@ -821,47 +790,6 @@
     </div>
 
     <script>
-        let postIdToDelete = null;
-
-        function openDeleteModal(postId) {
-            postIdToDelete = postId;
-            document.getElementById('deleteModal').classList.add('active');
-        }
-
-        function closeDeleteModal() {
-            document.getElementById('deleteModal').classList.remove('active');
-            postIdToDelete = null;
-        }
-
-        async function confirmDelete() {
-            if (!postIdToDelete) return;
-
-            try {
-                const response = await fetch(`/api/posts/${postIdToDelete}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json'
-                    }
-                });
-
-                if (response.ok || response.status === 204) {
-                    closeDeleteModal();
-                    window.location.reload();
-                } else {
-                    alert('Error deleting post. Please try again.');
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                alert('Error deleting post. Please try again.');
-            }
-        }
-
-        document.getElementById('deleteModal').addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeDeleteModal();
-            }
-        });
 
         function openModal() {
             document.getElementById('createModal').classList.add('active');
@@ -869,7 +797,7 @@
 
         function closeModal() {
             document.getElementById('createModal').classList.remove('active');
-            document.getElementById('createPostForm').reset();
+            document.getElementById('createtagForm').reset();
         }
 
         document.getElementById('createModal').addEventListener('click', function(e) {
@@ -891,30 +819,20 @@
             });
             document.querySelector(`[data-tag="${tagName}"]`).classList.add('active');
 
-            const posts = document.querySelectorAll('.post');
-            posts.forEach(post => {
-                const postTags = post.dataset.tags.split(',');
-                if (tagName === 'all' || postTags.includes(tagName)) {
-                    post.style.display = 'block';
-                } else {
-                    post.style.display = 'none';
-                }
-            });
+            const tags = document.querySelectorAll('.tag');
         }
 
-        document.getElementById('createPostForm').addEventListener('submit', async function(e) {
+        document.getElementById('createtagForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
             const formData = new FormData(this);
             const data = {
-                title: formData.get('title'),
-                content: formData.get('content'),
-                tags: formData.get('tags').split(',').map(t => t.trim()).filter(t => t)
+                name: formData.get('name'),
             };
 
             try {
-                const response = await fetch('/api/posts', {
-                    method: 'POST',
+                const response = await fetch('/api/tags', {
+                    method: 'tag',
                     headers: {
                         'Content-Type': 'application/json',
                     },
@@ -922,15 +840,15 @@
                 });
 
                 if (response.ok) {
-                    alert('Post created successfully!');
+                    alert('tag created successfully!');
                     closeModal();
                     window.location.reload();
                 } else {
-                    alert('Error creating post. Please try again.');
+                    alert('Error creating tag. Please try again.');
                 }
             } catch (error) {
                 console.error('Error:', error);
-                alert('Error creating post. Please try again.');
+                alert('Error creating tag. Please try again.');
             }
         });
     </script>
