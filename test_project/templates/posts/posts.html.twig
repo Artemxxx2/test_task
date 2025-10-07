@@ -117,6 +117,7 @@
         .posts-grid {
             display: grid;
             gap: 30px;
+            margin-bottom: 40px;
         }
 
         .post {
@@ -221,6 +222,80 @@
         .empty-state p {
             font-size: 1.3em;
             color: #718096;
+        }
+
+        /* Pagination Styles */
+        .pagination-wrapper {
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(10px);
+            padding: 25px;
+            border-radius: 15px;
+            margin-top: 40px;
+        }
+
+        .pagination-info {
+            text-align: center;
+            color: white;
+            margin-bottom: 20px;
+            font-size: 1em;
+            opacity: 0.9;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .page-link {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            padding: 10px 16px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.95em;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            min-width: 44px;
+            text-align: center;
+        }
+
+        .page-link:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
+
+        .page-link.active {
+            background: white;
+            color: #667eea;
+            border-color: white;
+            cursor: default;
+            transform: none;
+        }
+
+        .page-link.disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        .page-link.prev-next {
+            padding: 10px 20px;
+            background: white;
+            color: #667eea;
+        }
+
+        .page-link.prev-next:hover {
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .page-dots {
+            color: white;
+            opacity: 0.6;
+            padding: 0 5px;
         }
 
         /* Modal Styles */
@@ -391,6 +466,16 @@
                 flex-direction: column;
                 align-items: flex-start;
             }
+
+            .pagination {
+                gap: 5px;
+            }
+
+            .page-link {
+                padding: 8px 12px;
+                min-width: 40px;
+                font-size: 0.9em;
+            }
         }
     </style>
 </head>
@@ -464,6 +549,57 @@
                     </article>
                 {% endfor %}
             </div>
+
+            {% if lastPage > 1 %}
+                <div class="pagination-wrapper">
+                    <div class="pagination-info">
+                        Page {{ currentPage }} of {{ lastPage }}
+                    </div>
+                    <div class="pagination">
+                        {% if currentPage > 1 %}
+                            <a href="?page={{ currentPage - 1 }}" class="page-link prev-next">
+                                ← Previous
+                            </a>
+                        {% else %}
+                            <span class="page-link prev-next disabled">
+                                ← Previous
+                            </span>
+                        {% endif %}
+
+                        {% if currentPage > 3 %}
+                            <a href="?page=1" class="page-link">1</a>
+                            {% if currentPage > 4 %}
+                                <span class="page-dots">...</span>
+                            {% endif %}
+                        {% endif %}
+
+                        {% for page in range(max(1, currentPage - 2), min(lastPage, currentPage + 2)) %}
+                            {% if page == currentPage %}
+                                <span class="page-link active">{{ page }}</span>
+                            {% else %}
+                                <a href="?page={{ page }}" class="page-link">{{ page }}</a>
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if currentPage < lastPage - 2 %}
+                            {% if currentPage < lastPage - 3 %}
+                                <span class="page-dots">...</span>
+                            {% endif %}
+                            <a href="?page={{ lastPage }}" class="page-link">{{ lastPage }}</a>
+                        {% endif %}
+
+                        {% if currentPage < lastPage %}
+                            <a href="?page={{ currentPage + 1 }}" class="page-link prev-next">
+                                Next →
+                            </a>
+                        {% else %}
+                            <span class="page-link prev-next disabled">
+                                Next →
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endif %}
         {% else %}
             <div class="empty-state">
                 <div class="empty-state-icon">🤔</div>

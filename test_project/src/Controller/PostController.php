@@ -18,19 +18,31 @@ class PostController extends AbstractController
     #[Route('/', name: 'post_index')]
     public function index(Request $request): Response
     {
+        $page = (int)$request->get('page',1);
+
         $operation = new GetCollection(
             class: Post::class,
-            filters: ['post.filter_tag'] 
+            filters: ['post.filter_tag'],
+            paginationEnabled: true,
+            paginationItemsPerPage: 30,
+            paginationClientItemsPerPage: false, 
         );
         
         $posts = $this->collectionProvider->provide(
             $operation,
             [],
-            ['request' => $request]
+            [
+                'request' => $request,
+                'resource_class' => Post::class,
+                'filters' => ['page' => $page]
+            ]
         );
-
+        
         return $this->render('posts/posts.html.twig', [
             'posts' => $posts,
+            'currentPage' => $posts->getCurrentPage(),
+            'lastPage' => $posts->getLastPage(),
+            'itemsPerPage' => $posts->getItemsPerPage()
         ]);
     }
 
