@@ -30,7 +30,9 @@ services:
       - app_network
   
   php:
-    build: ./php
+    build:
+      context: .                    
+      dockerfile: ./php/dockerfile    
     container_name: app
     volumes:
       - ./ini/php.ini:/usr/local/etc/php/conf.d/custom-php.ini   
