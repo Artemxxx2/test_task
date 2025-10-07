@@ -1,0 +1,69 @@
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Посты</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .post {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .post h2 {
+            margin-top: 0;
+        }
+        .post-meta {
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+        }
+        .post-tags {
+            margin-top: 10px;
+        }
+        .tag {
+            background: #e0e0e0;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.85em;
+            margin-right: 5px;
+        }
+        a {
+            color: #0066cc;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    {% if post is defined %}
+                <div class="post-meta">
+                    {% if post.createdAt is defined %}
+                        {{ post.createdAt|date('d.m.Y H:i') }}
+                    {% endif %}
+                </div>
+                
+                {% if post.content is defined %}
+                    <p>{{ post.content|slice(0, 200) }}{% if post.content|length > 200 %}...{% endif %}</p>
+                {% endif %}
+                
+                {% if post.tags is defined and post.tags is not empty %}
+                    <div class="post-tags">
+                        {% for tag in post.tags %}
+                            <span class="tag">{{ tag.name ?? tag }}</span>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </article>
+    {% endif %}
+</body>
+</html>

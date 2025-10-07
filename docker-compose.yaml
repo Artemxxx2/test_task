@@ -33,6 +33,7 @@ services:
     build: ./php
     container_name: app
     volumes:
+      - ./ini/php.ini:/usr/local/etc/php/conf.d/custom-php.ini   
       - ./test_project:/var/www/test_project
     depends_on:
       - mysql
