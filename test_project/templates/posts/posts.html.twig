@@ -853,23 +853,21 @@
         </div>
     </div>
 
-    <!-- Tom Select JS -->
     <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
 
     <script>
         let postIdToDelete = null;
         let tagsSelect = null;
 
-        // Инициализация Tom Select для тегов
         function initTagsSelect() {
             tagsSelect = new TomSelect('#tags', {
                 plugins: ['remove_button'],
-                create: true, // Можно создавать новые теги
+                create: true, 
                 maxItems: null,
-                valueField: 'name',
+                valueField: '@id',
                 labelField: 'name',
                 searchField: 'name',
-                placeholder: 'Начните вводить или выберите теги...',
+                placeholder: 'Enter the tag name',
                 loadThrottle: 300,
                 load: function(query, callback) {
                     if (!query.length) return callback();
@@ -877,7 +875,6 @@
                     fetch('/api/tags?name=' + encodeURIComponent(query))
                         .then(response => response.json())
                         .then(json => {
-                            // Если API возвращает массив объектов с полем 'hydra:member'
                             const tags = json['hydra:member'] || json;
                             callback(tags);
                         })
