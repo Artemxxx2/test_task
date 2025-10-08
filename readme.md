@@ -20,3 +20,5 @@ http://localhost/
 Swagger
 
 http://localhost/api
+
+P.S мої налаштування .env у .env.sample
