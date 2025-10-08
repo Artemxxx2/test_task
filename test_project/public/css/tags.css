@@ -217,7 +217,6 @@
             color: #718096;
         }
 
-        /* Pagination Styles */
         .pagination-wrapper {
             background: rgba(255,255,255,0.15);
             backdrop-filter: blur(10px);
@@ -291,7 +290,6 @@
             padding: 0 5px;
         }
 
-        /* Create Modal Styles */
         .modal {
             display: none;
             position: fixed;
@@ -438,7 +436,6 @@
             background: #cbd5e0;
         }
 
-        /* Delete Modal Styles */
         .modal-overlay {
             position: fixed;
             top: 0;
